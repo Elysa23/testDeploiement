@@ -8,10 +8,32 @@ use App\Models\User;
 class UserController extends Controller
 {
     // Liste des utilisateurs
-    public function index()
+   public function index(Request $request)
 {
-    $users = \App\Models\User::all(); // Récupère tous les utilisateurs
-    return view('users.index', compact('users')); // Envoie à la vue
+    $query = \App\Models\User::query();
+
+    // Recherche par nom ou email
+    if ($request->filled('search')) {
+        $search = $request->input('search');
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%$search%")
+              ->orWhere('email', 'like', "%$search%");
+        });
+    }
+
+    // Filtre par rôle
+    if ($request->filled('role')) {
+        $query->where('role', $request->input('role'));
+    }
+
+    $users = $query->get();
+
+    // Statistiques
+    $totalAdmins = \App\Models\User::where('role', 'admin')->count();
+    $totalFormateurs = \App\Models\User::where('role', 'professeur')->count();
+    $totalApprenants = \App\Models\User::where('role', 'apprenant')->count();
+
+    return view('users.index', compact('users', 'totalAdmins', 'totalFormateurs', 'totalApprenants'));
 }
 
 
@@ -40,10 +62,28 @@ public function update(Request $request, $id)
     // On met à jour l'utilisateur
     $user->update($request->only(['name', 'email', 'role']));
 
-    // On redirige vers la liste avec un message de succès
-    return redirect('/utilisateurs')->with('success', 'Utilisateur modifié avec succès.');
+    // Retourne la vue d'édition avec un message de succès
+    return redirect()->route('users.edit', $user->id)
+        ->with('success', 'Utilisateur modifié avec succès !')
+        ->with('redirect', true);
 }
 
+
+    // SUPPRESSION D'UN UTILISATEUR
+
+    public function destroy($id)
+{
+    $user = \App\Models\User::findOrFail($id);
+
+    // (Optionnel) Empêcher la suppression de soi-même
+    if (auth()->id() == $user->id) {
+        return redirect('/utilisateurs')->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+    }
+
+    $user->delete();
+
+    return redirect('/utilisateurs')->with('success', 'Utilisateur supprimé avec succès.');
+}
 }
 
 

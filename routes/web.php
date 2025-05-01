@@ -26,19 +26,13 @@ require __DIR__.'/auth.php';
 use App\Models\User;
 use Illuminate\Http\Request;
 
-// Afficher le formulaire d'ajout d'utilisateur
-
-
-Route::get('/ajouter-utilisateur', function () {
-    return view('ajouter-utilisateur');
-})->middleware(['auth', IsAdmin::class]); // protégé par connexion
 
 
 // Création de la route POST pour enregistrer l'utilisateur 28/04
 
 use Illuminate\Support\Facades\Hash;
 
-Route::post('/ajouter-utilisateur', function (Request $request) {
+Route::post('/utilisateurs', function (Request $request) {
     // Valider les données
     $request->validate([
         'name' => 'required',
@@ -55,7 +49,7 @@ Route::post('/ajouter-utilisateur', function (Request $request) {
         'role' => $request->role,
     ]);
 
-    return redirect('/ajouter-utilisateur')->with('success', 'Utilisateur ajouté avec succès.');
+    return redirect('/utilisateurs')->with('success', 'Utilisateur ajouté avec succès.');
 })->middleware(['auth', IsAdmin::class]);
 
 
@@ -82,3 +76,9 @@ Route::get('/utilisateurs/{user}/edit', [App\Http\Controllers\UserController::cl
 Route::put('/utilisateurs/{user}', [App\Http\Controllers\UserController::class, 'update'])
     ->middleware('is_admin')
     ->name('users.update');
+
+// 30/04 : Suppression d'un utilisateur
+Route::delete('/utilisateurs/{user}', [App\Http\Controllers\UserController::class, 'destroy'])
+    ->middleware('is_admin')
+    ->name('users.destroy');
+
