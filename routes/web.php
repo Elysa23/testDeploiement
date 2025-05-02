@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\IsAdmin;
+use App\Http\Controllers\CourseController;
 
 
 Route::get('/', function () {
@@ -81,4 +82,20 @@ Route::put('/utilisateurs/{user}', [App\Http\Controllers\UserController::class, 
 Route::delete('/utilisateurs/{user}', [App\Http\Controllers\UserController::class, 'destroy'])
     ->middleware('is_admin')
     ->name('users.destroy');
+
+// Route pour supprimer la miniature d'un cours
+Route::delete('courses/{course}/remove-thumbnail', [App\Http\Controllers\CourseController::class, 'removeThumbnail'])->name('courses.remove-thumbnail');
+
+// 01/05 : Routes pour les cours
+
+Route::resource('courses', App\Http\Controllers\CourseController::class)->middleware('auth');
+
+// 02/05 : Suppression image dans thumbnail
+
+Route::delete('courses/{course}/remove-thumbnail', [CourseController::class, 'removeThumbnail'])->name('courses.remove-thumbnail');
+
+// Affichage cours côté apprenant
+
+Route::get('apprenant/cours', [App\Http\Controllers\CourseController::class, 'publishedForStudents'])
+    ->name('courses.published');
 

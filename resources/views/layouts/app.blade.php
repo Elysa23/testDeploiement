@@ -16,6 +16,7 @@
     </head>
     <body class="font-sans antialiased">
 
+
    <!-- 29/04 : Ajout message d'erreur sur accès ajouter-utilisateur par non-admin -->
    @if(session('error'))
     <div class="alert alert-danger">

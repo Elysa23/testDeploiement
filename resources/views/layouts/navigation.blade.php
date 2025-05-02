@@ -23,6 +23,24 @@
                         {{ __('Utilisateurs') }}
                     </x-nav-link>
                 @endif
+
+                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'formateur')
+                <x-nav-link :href="route('courses.index')" :active="request()->is('courses*')">
+            {{ __('Cours') }}
+                </x-nav-link>
+                @endif
+
+        <!-- Menu cours pour les apprenants-->
+
+                @auth
+                    @if(Auth::user()->role === 'apprenant')
+                <x-nav-link :href="route('courses.published')" :active="request()->is('apprenant/cours')">
+                    {{ __('Cours') }}
+                </x-nav-link>
+                    @endif
+                @endauth
+
+
             @endauth
         </div>
     </div>
