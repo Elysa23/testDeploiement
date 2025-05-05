@@ -3,15 +3,17 @@
 @section('content')
 
 <div class="flex space-x-10 mb-6 justify-center mt-10 ">
-    <a href="{{ route('courses.index', ['status' => 'published']) }}"
+    <a href="{{ route('courses.index', ['status' => 'published', 'search' => request('search')]) }}"
        class="px-4 py-2 rounded-t {{ $status == 'published' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white' }}">
         Publiés
     </a>
-    <a href="{{ route('courses.index', ['status' => 'draft']) }}"
+    <a href="{{ route('courses.index', ['status' => 'draft', 'search' => request('search')]) }}"
+
        class="px-4 py-2 rounded-t {{ $status == 'draft' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white' }}">
         Brouillons
     </a>
-    <a href="{{ route('courses.index', ['status' => 'archived']) }}"
+     <a href="{{ route('courses.index', ['status' => 'archived', 'search' => request('search')]) }}"
+
        class="px-4 py-2 rounded-t {{ $status == 'archived' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white' }}">
         Archivés
     </a>
@@ -40,6 +42,31 @@
     + Nouveau cours
 </a>
 
+
+<!-- Formulaire de recherche -->
+
+<form method="GET" action="{{ route('courses.index') }}" class="mb-6 flex flex-col sm:flex-row items-center gap-4">
+    <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher par titre..."
+           class="w-full sm:w-64 border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+    <input type="hidden" name="status" value="{{ $status }}">
+    <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
+        Rechercher
+    </button>
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.querySelector('input[name="search"]');
+    const form = searchInput.closest('form');
+    if (searchInput && form) {
+        searchInput.addEventListener('input', function () {
+            if (this.value === '') {
+                form.submit();
+            }
+        });
+    }
+});
+</script>
+</form>
+
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @forelse($courses as $course)
         <div class="bg-[#ddbcf3] dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col justify-between h-full">
@@ -62,9 +89,17 @@
                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold">Modifier</a>
             </div>
         </div>
+
+        <!--Pagination-->
+
+        
+
     @empty
         <div class="col-span-3 text-center text-gray-500">Aucun cours trouvé.</div>
     @endforelse
 </div>
+<div class="mt-8">
+            {{ $courses->withQueryString()->links() }}
+        </div>
 
 @endsection

@@ -75,11 +75,23 @@
             @endif
         </div>
 
-        <div class="flex justify-end">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded">
-                Enregistrer les modifications
-            </button>
-        </div>
+        <div class="flex justify-between items-center">
+    {{-- Bouton de suppression --}}
+    <form action="{{ route('courses.destroy', $course->id) }}" method="POST" onsubmit="return confirm('Confirmer la suppression de ce cours ?')" class="inline">
+        @csrf
+        @method('DELETE')
+        @if(Auth::user()->role === 'admin' || Auth::user()->role === 'formateur')
+        <button type="submit" class="bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-6 rounded">
+            Supprimer
+        </button>
+        @endif
+    </form>
+
+    {{-- Bouton d'enregistrement --}}
+    <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded">
+        Enregistrer les modifications
+    </button>
+</div>
     </form>
   
 </div>

@@ -24,7 +24,7 @@
 
 <!-- 05/05 Affichage mention "cours terminé-->
 
-@if(isset($isLastPage) && $isLastPage)
+@if(Auth::user() && Auth::user()->role === 'apprenant' && isset($isLastPage) && $isLastPage)
     <div class="flex items-center justify-center mt-8">
         <span class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-lg font-semibold shadow">
             🎉 Cours terminé ! Bravo !
@@ -33,7 +33,7 @@
 @endif
 
     <h2 class="text-xl font-semibold mb-2 dark:text-white">{{ $page->title }}</h2>
-    <div class="prose dark:prose-invert max-w-none mb-6">
+    <div class="prose dark:prose-invert max-w-none mb-6 dark:text-white">
         {!! nl2br(e($page->content)) !!}
     </div>
 
@@ -47,7 +47,7 @@
         @if($nextPage)
             <a href="{{ route('courses.page', [$course->id, $nextPage->id]) }}" class="bg-blue-600 text-white px-4 py-2 rounded">Suivant</a>
         @else
-            <span>Cours terminé !</span>
+            <span>Fin du cours !</span>
         @endif
     </div>
 </div>

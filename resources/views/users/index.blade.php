@@ -152,6 +152,37 @@
     </div>
 </div>
 
+<!-- Modal d'édition d'utilisateur -->
+<div id="edit-user-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md relative">
+        <button onclick="closeEditUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-2xl">&times;</button>
+        <h2 class="text-xl font-bold mb-4 dark:text-white">Modifier l'utilisateur</h2>
+        <form id="edit-user-form" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="mb-4">
+                <label class="block mb-1">Nom :</label>
+                <input type="text" name="name" id="edit-user-name" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" required>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-1">Email :</label>
+                <input type="email" name="email" id="edit-user-email" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" required>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-1">Rôle :</label>
+                <select name="role" id="edit-user-role" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" required>
+                    <option value="admin">Admin</option>
+                    <option value="professeur">Professeur</option>
+                    <option value="apprenant">Apprenant</option>
+                </select>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
             <!-- Formulaire de recherche-->
 
         <form id="search-form" method="GET" action="{{ url('/utilisateurs') }}" class="mb-4 flex flex-wrap gap-2 items-center">
@@ -199,8 +230,15 @@
                     <td class="border px-4 py-2">{{ $user->email }}</td>
                     <td class="border px-4 py-2">{{ $user->role }}</td>
                     <td class="border px-4 py-2">
-    <a href="{{ route('users.edit', $user->id) }}" class="text-blue-500 dark:text-blue-400 hover:underline">Modifier</a>
-
+                    <button onclick="openEditUserModal({ 
+    id: '{{ $user->id }}', 
+    name: '{{ $user->name }}', 
+    email: '{{ $user->email }}', 
+    role: '{{ $user->role }}' 
+})"
+class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+    Modifier
+</button>
                     </td>
                     <td class="border px-4 py-2">
                         
@@ -243,4 +281,17 @@
             {{ $users->links() }}
         </div>
     </div>
+
+    <script>
+function openEditUserModal(user) {
+    document.getElementById('edit-user-modal').style.display = 'flex';
+    document.getElementById('edit-user-name').value = user.name;
+    document.getElementById('edit-user-email').value = user.email;
+    document.getElementById('edit-user-role').value = user.role;
+    document.getElementById('edit-user-form').action = '/utilisateurs/' + user.id;
+}
+function closeEditUserModal() {
+    document.getElementById('edit-user-modal').style.display = 'none';
+}
+</script>
 @endsection

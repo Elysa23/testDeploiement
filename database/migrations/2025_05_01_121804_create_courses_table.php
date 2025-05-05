@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('teacher_id')
                   ->constrained('users')
                   ->onDelete('cascade');
-            $table->enum('status', ['draft', 'published'])
+            $table->enum('status', ['draft', 'published','archived'])
                   ->default('draft');
             $table->string('thumbnail')->nullable();
             $table->integer('duration')->nullable();

@@ -114,3 +114,6 @@ Route::put('courses/{course}/pages/{page}', [App\Http\Controllers\CoursePageCont
 Route::delete('courses/{course}/pages/{page}', [App\Http\Controllers\CoursePageController::class, 'destroy'])->name('courses.pages.destroy');
 Route::get('apprenant/cours/{course}/{page?}', [App\Http\Controllers\CoursePageController::class, 'showPage'])
     ->name('courses.page');
+
+// 05/05 Cours publiés
+Route::get('apprenant/cours', [App\Http\Controllers\CourseController::class, 'published'])->name('courses.published');

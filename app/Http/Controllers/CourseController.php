@@ -10,20 +10,30 @@ class CourseController extends Controller
 {
     // Affiche la liste des cours du formateur connecté
     public function index(Request $request)
-{
-    $status = $request->get('status', 'published'); // Par défaut : publié
+    {
+        $status = $request->get('status', 'published');
+        $search = $request->get('search');
+    
+        $query = \App\Models\Course::query();
+    
+        // Filtrer par statut
+        $query->where('status', $status);
+    
+        // Filtrer par titre si recherche
+        if ($search) {
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+    
+        // Filtrer selon le rôle
+        if (Auth::user()->role === 'formateur') {
+            $query->where('teacher_id', Auth::id());
+        }
+    
+        // Pour l'admin, pas de filtre supplémentaire
+        $courses = $query->paginate(6);
 
-    if (Auth::user()->role === 'admin') {
-        $courses = \App\Models\Course::where('status', $status)->get();
-    } else {
-        $courses = \App\Models\Course::where('teacher_id', Auth::id())
-            ->where('status', $status)
-            ->get();
+        return view('courses.index', compact('courses', 'status', 'search'));
     }
-
-    return view('courses.index', compact('courses', 'status'));
-}
-
     // Affiche le formulaire de création d’un cours
     public function create()
     {
@@ -164,4 +174,17 @@ $courses = \App\Models\Course::where('status', 'published')->get();
 return view('courses.published', compact('courses'));
     }
 
+
+    public function published(Request $request)
+{
+    $search = $request->get('search');
+
+    $query = \App\Models\Course::where('status', 'published');
+
+    if ($search) {
+        $query->where('title', 'like', '%' . $search . '%');
+    }
+    $courses = $query->paginate(6);
+    return view('courses.published', compact('courses', 'search'));
+}
 }
