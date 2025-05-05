@@ -99,3 +99,18 @@ Route::delete('courses/{course}/remove-thumbnail', [CourseController::class, 're
 Route::get('apprenant/cours', [App\Http\Controllers\CourseController::class, 'publishedForStudents'])
     ->name('courses.published');
 
+// 05/05 Affichage pages des cours 
+Route::get('apprenant/cours/{course}/{page?}', [App\Http\Controllers\CourseController::class, 'showPage'])
+    ->name('courses.page');
+
+
+// 05/05 Gestion des pages des cours
+
+Route::get('courses/{course}/pages', [App\Http\Controllers\CoursePageController::class, 'manage'])->name('courses.pages.manage');
+Route::get('courses/{course}/pages/create', [App\Http\Controllers\CoursePageController::class, 'create'])->name('courses.pages.create');
+Route::post('courses/{course}/pages', [App\Http\Controllers\CoursePageController::class, 'store'])->name('courses.pages.store');
+Route::get('courses/{course}/pages/{page}/edit', [App\Http\Controllers\CoursePageController::class, 'edit'])->name('courses.pages.edit');
+Route::put('courses/{course}/pages/{page}', [App\Http\Controllers\CoursePageController::class, 'update'])->name('courses.pages.update');
+Route::delete('courses/{course}/pages/{page}', [App\Http\Controllers\CoursePageController::class, 'destroy'])->name('courses.pages.destroy');
+Route::get('apprenant/cours/{course}/{page?}', [App\Http\Controllers\CoursePageController::class, 'showPage'])
+    ->name('courses.page');

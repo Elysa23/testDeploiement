@@ -26,4 +26,9 @@ class Course extends Model
     {
         return $this->status === 'published';
     }
+
+    public function pages()
+    {
+        return $this->hasMany(CoursePage::class)->orderBy('order');
+    }
 }

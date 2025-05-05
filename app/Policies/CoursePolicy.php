@@ -35,8 +35,5 @@ class CoursePolicy
         return $user->id === $course->teacher_id || $user->role === 'admin';
     }
 
-    @can('update', $course)
-    <a href="{{ route('courses.edit', $course->id) }}"
-       class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold">Modifier</a>
-@endcan
+    
 }
