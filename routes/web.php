@@ -128,3 +128,8 @@ Route::post('quizzes/generate', [App\Http\Controllers\QuizController::class, 'ge
 
 Route::post('/quiz/generate', [QuizController::class, 'generate'])->name('quiz.generate');
 
+// 08/05 : Affichage du quiz à l’apprenant
+Route::get('quizzes/{quiz}/answer', [QuizController::class, 'answer'])->name('quizzes.answer');
+
+// Soumission des réponses
+Route::post('quizzes/{quiz}/submit', [QuizController::class, 'submitAnswers'])->name('quizzes.submit');

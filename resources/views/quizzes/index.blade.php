@@ -40,7 +40,11 @@
     @endforelse
 </div>
 
-
+<div id="success-message" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-green-100 border border-green-400 text-green-800 px-8 py-4 rounded shadow-lg text-lg font-semibold">
+        <span id="success-message-text"></span>
+    </div>
+</div>
 
 <!-- Modal de création/génération de quiz -->
 <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
@@ -117,6 +121,18 @@ function generateQuiz() {
     });
 }
 
+function showSuccessMessage(message) {
+    const msgBox = document.getElementById('success-message');
+    const msgText = document.getElementById('success-message-text');
+    msgText.textContent = message;
+    msgBox.classList.remove('hidden');
+    // Masquer après 2 secondes et recharger la page
+    setTimeout(() => {
+        msgBox.classList.add('hidden');
+        window.location.reload();
+    }, 2000);
+}
+
 function saveQuiz() {
     const courseId = document.getElementById('course_id').value;
     const content = document.getElementById('quiz-content').value;
@@ -124,6 +140,7 @@ function saveQuiz() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: JSON.stringify({ course_id: courseId, content: content })
@@ -135,9 +152,8 @@ function saveQuiz() {
         return response.json();
     })
     .then(data => {
-        alert('Quiz enregistré avec succès !');
         closeQuizModal();
-        window.location.reload();
+        showSuccessMessage('Quiz enregistré avec succès !');
     })
     .catch(err => {
         if (err && err.errors) {

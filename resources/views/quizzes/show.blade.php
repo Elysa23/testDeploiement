@@ -7,7 +7,7 @@
             Quiz du cours : {{ $quiz->course->title ?? 'Cours inconnu' }}
         </h1>
         <<div class="prose dark:prose-invert dark:text-white max-w-none mb-6">
-            {!! nl2br(e($quiz->content)) !!}
+        {!! $quizContentHtml !!}
         </div>
         @if(Auth::id() === $quiz->user_id || Auth::user()->role==='admin')
         <div class="flex justify-between">

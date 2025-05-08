@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Quiz;
 use App\Models\Course;
+use App\Models\QuizAnswer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -81,7 +82,14 @@ class QuizController extends Controller
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => "Génère un quiz varié (QCM, vrai/faux, ouvert) de difficulté raisonnable sur ce contenu : " . $course->content,
+                    'content' => "Génère un quiz varié (QCM, vrai/faux, ouvert) de difficulté raisonnable sur ce contenu, en utilisant la syntaxe Markdown. 
+                - Utilise des titres (#) pour chaque question.
+                - Mets les questions en gras (**).
+                - Utilise des listes à puces pour les propositions de réponses.
+                - Indique la bonne réponse en la mettant en gras ou avec [x] pour les QCM.
+                - Ajoute une ligne de séparation (---) entre chaque question.
+
+                Contenu du cours : " . $course->content,    
                 ],
             ],
         ]);
@@ -120,4 +128,83 @@ public function destroy(Quiz $quiz)
     return redirect()->route('quizzes.index')->with('success', 'Quiz supprimé avec succès !');
 }
 
+public function answer(Quiz $quiz)
+{
+    dd($questions);
+    $questions = parseQuizMarkdown($quiz->content);
+
+    return view('quizzes.answer', compact('quiz', 'questions'));
 }
+
+public function submitAnswers(Request $request, Quiz $quiz)
+{
+    $request->validate([
+        'answers' => 'required|array',
+        'time_spent' => 'nullable|integer'
+    ]);
+
+    QuizAnswer::create([
+        'quiz_id' => $quiz->id,
+        'user_id' => Auth::id(),
+        'answers' => $request->answers,
+        'time_spent' => $request->time_spent,
+    ]);
+
+    return redirect()->route('quizzes.index')->with('success', 'Quiz soumis avec succès !');
+}
+public function parseQuizMarkdown($markdown)
+{
+    $questionsRaw = preg_split('/^\s*---\s*$/m', $markdown); // Sépare les questions
+    $questions = [];
+
+    foreach ($questionsRaw as $block) {
+        $block = trim($block);
+        if (!$block) continue;
+
+        // Titre (optionnel)
+        if (preg_match('/^#\s*(.+)$/m', $block, $m)) {
+            $title = trim($m[1]);
+        } else {
+            $title = null;
+        }
+
+        // Question (en gras)
+        if (preg_match('/\*\*(.+?)\*\*/s', $block, $m)) {
+            $question = trim($m[1]);
+        } else {
+            $question = null;
+        }
+
+        // Choix (QCM)
+        preg_match_all('/^- \[( |x)\] (.+)$/m', $block, $matches, PREG_SET_ORDER);
+        $choices = [];
+        $correct = null;
+        foreach ($matches as $i => $match) {
+            $choices[] = $match[2];
+            if (strtolower($match[1]) === 'x') {
+                $correct = $i;
+            }
+        }
+
+        // Type de question
+        if (count($choices) === 2 && in_array(strtolower($choices[0]), ['vrai', 'faux'])) {
+            $type = 'vrai-faux';
+        } elseif (count($choices) > 0) {
+            $type = 'qcm';
+        } else {
+            $type = 'ouvert';
+        }
+
+        $questions[] = [
+            'title' => $title,
+            'question' => $question,
+            'choices' => $choices,
+            'correct' => $correct,
+            'type' => $type,
+        ];
+    }
+
+    return $questions;
+}
+}
+
