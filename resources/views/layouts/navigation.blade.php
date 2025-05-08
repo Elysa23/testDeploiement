@@ -40,7 +40,9 @@
                     @endif
                 @endauth
 
-
+                <x-nav-link :href="route('quizzes.index')" :active="request()->is('quizzes*')">
+                    {{ __('Quiz') }}
+                </x-nav-link>
             @endauth
         </div>
     </div>

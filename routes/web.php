@@ -117,3 +117,14 @@ Route::get('apprenant/cours/{course}/{page?}', [App\Http\Controllers\CoursePageC
 
 // 05/05 Cours publiés
 Route::get('apprenant/cours', [App\Http\Controllers\CourseController::class, 'published'])->name('courses.published');
+
+// 06/05 Liste des quiz, création, affichage, édition, suppression
+Route::resource('quizzes', App\Http\Controllers\QuizController::class);
+
+// Route spécifique pour la génération via IA (AJAX ou POST)
+Route::post('quizzes/generate', [App\Http\Controllers\QuizController::class, 'generate'])->name('quizzes.generate');
+
+// Route API quizz
+
+Route::post('/quiz/generate', [QuizController::class, 'generate'])->name('quiz.generate');
+

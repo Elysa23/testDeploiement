@@ -1,0 +1,111 @@
+
+@extends('layouts.app')
+
+@section('content')
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6 dark:text-white">Liste des quiz</h1>
+
+    <button onclick="openQuizModal()" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded mb-4">
+        + Créer un quiz
+    </button>
+
+
+
+<!-- Modal de création/génération de quiz -->
+<div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-lg relative">
+        <button onclick="closeQuizModal()" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-2xl">&times;</button>
+        <h2 class="text-xl font-bold mb-4 dark:text-white">Générer un quiz IA</h2>
+        <form id="quiz-generate-form" onsubmit="event.preventDefault(); generateQuiz();">
+            @csrf
+            <div class="mb-4">
+                <label for="course_id" class="block mb-1 dark:text-white">Sélectionner un cours</label>
+                <select name="course_id" id="course_id" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" required>
+                    <option value="">-- Choisir un cours --</option>
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}">{{ $course->title }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-4">
+                <button type="submit" id="generate-btn" class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded">
+                    Générer le quiz
+                </button>
+            </div>
+            <div id="quiz-result" class="mb-4 hidden">
+                <label class="block mb-1 dark:text-white">Quiz généré (modifiable) :</label>
+                <textarea id="quiz-content" name="content" rows="10" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white"></textarea>
+                <div class="flex justify-between mt-2">
+                    <button type="button" onclick="generateQuiz()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">Regénérer</button>
+                    <button type="button" onclick="saveQuiz()" class="bg-green-600 hover:bg-green-800 text-white px-4 py-2 rounded">Enregistrer</button>
+                </div>
+            </div>
+            <div id="quiz-loading" class="text-center text-blue-600 font-semibold hidden">
+                Génération du quiz en cours...
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openQuizModal() {
+    document.getElementById('quiz-modal').style.display = 'flex';
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-loading').classList.add('hidden');
+    document.getElementById('quiz-content').value = '';
+}
+function closeQuizModal() {
+    document.getElementById('quiz-modal').style.display = 'none';
+}
+
+function generateQuiz() {
+    const courseId = document.getElementById('course_id').value;
+    if (!courseId) {
+        alert('Sélectionne un cours.');
+        return;
+    }
+    document.getElementById('quiz-loading').classList.remove('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+    fetch("{{ route('quizzes.generate') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ course_id: courseId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('quiz-loading').classList.add('hidden');
+        document.getElementById('quiz-result').classList.remove('hidden');
+        document.getElementById('quiz-content').value = data.quiz;
+    })
+    .catch(() => {
+        document.getElementById('quiz-loading').classList.add('hidden');
+        alert('Erreur lors de la génération du quiz.');
+    });
+}
+
+function saveQuiz() {
+    const courseId = document.getElementById('course_id').value;
+    const content = document.getElementById('quiz-content').value;
+    fetch("{{ route('quizzes.store') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ course_id: courseId, content: content })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Quiz enregistré avec succès !');
+        closeQuizModal();
+        window.location.reload();
+    })
+    .catch(() => {
+        alert('Erreur lors de l\'enregistrement du quiz.');
+    });
+}
+</script>
+@endsection

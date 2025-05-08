@@ -90,10 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         </div>
 
-        <!--Pagination-->
-
         
-
     @empty
         <div class="col-span-3 text-center text-gray-500">Aucun cours trouvé.</div>
     @endforelse
