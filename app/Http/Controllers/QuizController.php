@@ -7,6 +7,7 @@ use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use League\CommonMark\CommonMarkConverter;
 
 class QuizController extends Controller
 {
@@ -27,31 +28,38 @@ class QuizController extends Controller
 
     // Enregistre le quiz validé
     public function store(Request $request)
-    {
-        dd($request->all());
-        $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'content' => 'required',   //'required|json',
-        ]);
+{
+    $request->validate([
+        'course_id' => 'required|exists:courses,id',
+        'content' => 'required'
+    ]);
 
-        try{
+    $quiz = Quiz::create([
+        'course_id' => $request->course_id,
+        'user_id' => Auth::id(),
+        'content' => $request->content,
+    ]);
 
-        Quiz::create([
-            'course_id' => $request->course_id,
-            'user_id' => Auth::id(),
-            'content' => $request->content,
-        ]);
-    } catch (\Exception $e) {
-        dd($e->getMessage(), $e->getTraceAsString());
+    // Si la requête attend du JSON (AJAX)
+    if ($request->wantsJson() || $request->ajax()) {
+        return response()->json(['success' => true, 'quiz_id' => $quiz->id]);
     }
 
-        return redirect()->route('quizzes.index')->with('success', 'Quiz enregistré avec succès !');
-    }
+    // Sinon, comportement classique
+    return redirect()->route('quizzes.index')->with('success', 'Quiz enregistré avec succès !');
+}
 
     // Affiche un quiz
+
     public function show(Quiz $quiz)
     {
-        return view('quizzes.show', compact('quiz'));
+        $converter = new CommonMarkConverter([
+            'html_input' => 'strip',
+            'allow_unsafe_links' => false,
+        ]);
+        $quizContentHtml = $converter->convertToHtml($quiz->content);
+    
+        return view('quizzes.show', compact('quiz', 'quizContentHtml'));
     }
 
     // Génère un quiz via l’API IA (exemple avec Mistral)
@@ -85,4 +93,31 @@ class QuizController extends Controller
         // Parser le texte en JSON si besoin, ou le retourner tel quel
         return response()->json(['quiz' => $quizText]);
     }
+
+    public function edit(Quiz $quiz)
+{
+    // Optionnel : vérifier que l'utilisateur a le droit de modifier
+    return view('quizzes.edit', compact('quiz'));
+}
+
+public function update(Request $request, Quiz $quiz)
+{
+    $request->validate([
+        'content' => 'required'
+    ]);
+
+    $quiz->update([
+        'content' => $request->content
+    ]);
+
+    return redirect()->route('quizzes.index')->with('success', 'Quiz modifié avec succès !');
+}
+
+public function destroy(Quiz $quiz)
+{
+    // Optionnel : vérifier que l'utilisateur a le droit de supprimer
+    $quiz->delete();
+    return redirect()->route('quizzes.index')->with('success', 'Quiz supprimé avec succès !');
+}
+
 }

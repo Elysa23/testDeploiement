@@ -9,6 +9,37 @@
         + Créer un quiz
     </button>
 
+    <!--Affichage quizz dans l'onglet quizz-->
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @forelse($quizzes as $quiz)
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-2 dark:text-white">
+                {{ $quiz->course->title ?? 'Cours inconnu' }}
+            </h3>
+            <p class="text-gray-700 dark:text-gray-200 mb-4">
+                {!! nl2br(e(Str::limit($quiz->content, 200))) !!}
+            </p>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-500 dark:text-gray-400">
+                    Créé par : {{ $quiz->user->name ?? 'Inconnu' }}
+                </span>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <a href="{{ route('quizzes.show', $quiz) }}" class="text-blue-600 hover:underline">Voir</a>
+                @if(Auth::id() === $quiz->user_id || Auth::user()->role==='admin')
+                    <a href="{{ route('quizzes.edit', $quiz) }}" class="text-yellow-600 hover:underline ml-2">Modifier</a>
+                @endif
+            </div>
+        </div>
+    @empty
+        <div class="col-span-3 text-center text-gray-500 dark:text-gray-400">
+            Aucun quiz généré pour le moment.
+        </div>
+    @endforelse
+</div>
+
 
 
 <!-- Modal de création/génération de quiz -->
@@ -97,14 +128,23 @@ function saveQuiz() {
         },
         body: JSON.stringify({ course_id: courseId, content: content })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw err; });
+        }
+        return response.json();
+    })
     .then(data => {
         alert('Quiz enregistré avec succès !');
         closeQuizModal();
         window.location.reload();
     })
-    .catch(() => {
-        alert('Erreur lors de l\'enregistrement du quiz.');
+    .catch(err => {
+        if (err && err.errors) {
+            alert(Object.values(err.errors).join("\n"));
+        } else {
+            alert('Erreur lors de l\'enregistrement du quiz.');
+        }
     });
 }
 </script>

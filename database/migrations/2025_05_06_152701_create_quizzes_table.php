@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // créateur du quiz
-            $table->longText('content')->charset('utf8mb4')->collation('utf8mb4_unicode_ci'); // Le quiz généré (JSON ou texte)
+            $table->longText('content'); // Le quiz généré (JSON ou texte)
             $table->timestamps();
         });
     }
