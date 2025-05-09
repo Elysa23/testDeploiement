@@ -4,11 +4,11 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-6 dark:text-white">Liste des quiz</h1>
-
+    @if(auth()->user()->role !== 'apprenant')
     <button onclick="openQuizModal()" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded mb-4">
         + Créer un quiz
     </button>
-
+    @endif
     <!--Affichage quizz dans l'onglet quizz-->
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -27,10 +27,19 @@
             </div>
 
             <div class="flex justify-between items-center">
+            @if(auth()->user()->role === 'apprenant')
+            <a href="{{ route('quizzes.answer', $quiz) }}" class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded">
+            Passer le quiz
+            </a>
+            @endif
+
+            @if(auth()->user()->role !== 'apprenant')
                 <a href="{{ route('quizzes.show', $quiz) }}" class="text-blue-600 hover:underline">Voir</a>
-                @if(Auth::id() === $quiz->user_id || Auth::user()->role==='admin')
+            @endif
+
+            @if(Auth::id() === $quiz->user_id || Auth::user()->role==='admin')
                     <a href="{{ route('quizzes.edit', $quiz) }}" class="text-yellow-600 hover:underline ml-2">Modifier</a>
-                @endif
+            @endif
             </div>
         </div>
     @empty

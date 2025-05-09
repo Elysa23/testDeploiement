@@ -82,8 +82,9 @@ class CourseController extends Controller
         Course::create($data);
     
         // 8. Redirection avec message de succès
-        return redirect()->route('courses.pages.manage', '$course->id')->with('success', 'Cours créé avec succès !');
+        return redirect()->route('courses.index', '$course->id')->with('success', 'Cours créé avec succès !');
     }
+
 
     // Affiche le détail d’un cours
     public function show($id)

@@ -82,12 +82,18 @@ class QuizController extends Controller
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => "Génère un quiz varié (QCM, vrai/faux, ouvert) de difficulté raisonnable sur ce contenu, en utilisant la syntaxe Markdown. 
-                - Utilise des titres (#) pour chaque question.
-                - Mets les questions en gras (**).
-                - Utilise des listes à puces pour les propositions de réponses.
-                - Indique la bonne réponse en la mettant en gras ou avec [x] pour les QCM.
-                - Ajoute une ligne de séparation (---) entre chaque question.
+                    'content' => "> Génère un quiz QCM sur ce contenu, en respectant STRICTEMENT ce format Markdown pour chaque question :
+
+                    > Question
+                    > - [ ] Proposition 1
+                    > - [ ] Proposition 2
+                    > - [x] Bonne réponse
+                    > ---
+                    >
+                    > - Utilise toujours - [ ] pour chaque proposition, et - [x] pour la bonne réponse.
+                    > - N’utilise jamais d’autres formats (pas de parenthèses, pas de lettres, pas de gras, pas de crochets autour du texte, pas de listes simples).
+                    > - Ne mets pas la bonne réponse en gras ou entre crochets, indique-la uniquement par [x].
+                    > - Ajoute trois tirets --- entre chaque question. 
 
                 Contenu du cours : " . $course->content,    
                 ],
@@ -130,8 +136,8 @@ public function destroy(Quiz $quiz)
 
 public function answer(Quiz $quiz)
 {
-    dd($questions);
-    $questions = parseQuizMarkdown($quiz->content);
+    
+    $questions = $this->parseQuizMarkdown($quiz->content);
 
     return view('quizzes.answer', compact('quiz', 'questions'));
 }
@@ -152,21 +158,15 @@ public function submitAnswers(Request $request, Quiz $quiz)
 
     return redirect()->route('quizzes.index')->with('success', 'Quiz soumis avec succès !');
 }
+
 public function parseQuizMarkdown($markdown)
 {
-    $questionsRaw = preg_split('/^\s*---\s*$/m', $markdown); // Sépare les questions
+    $questionsRaw = preg_split('/^\s*---\s*$/m', $markdown);
     $questions = [];
 
     foreach ($questionsRaw as $block) {
         $block = trim($block);
         if (!$block) continue;
-
-        // Titre (optionnel)
-        if (preg_match('/^#\s*(.+)$/m', $block, $m)) {
-            $title = trim($m[1]);
-        } else {
-            $title = null;
-        }
 
         // Question (en gras)
         if (preg_match('/\*\*(.+?)\*\*/s', $block, $m)) {
@@ -175,28 +175,32 @@ public function parseQuizMarkdown($markdown)
             $question = null;
         }
 
-        // Choix (QCM)
-        preg_match_all('/^- \[( |x)\] (.+)$/m', $block, $matches, PREG_SET_ORDER);
+        // Choix QCM format - [ ] ou - [x]
+        preg_match_all('/^- [\[\(]( |x)[\]\)] (.+)$/m', $block, $matches, PREG_SET_ORDER);
         $choices = [];
         $correct = null;
-        foreach ($matches as $i => $match) {
-            $choices[] = $match[2];
-            if (strtolower($match[1]) === 'x') {
-                $correct = $i;
+        if (count($matches) > 0) {
+            foreach ($matches as $i => $match) {
+                $choices[] = $match[2];
+                if (strtolower($match[1]) === 'x') {
+                    $correct = $i;
+                }
+            }
+        } else {
+            // Sinon, tente de parser les listes simples - A. ... ou - **[D. ...]**
+            preg_match_all('/^- (?:\*\*)?\[?([A-Z])\.? (.+?)\]?(?:\*\*)?$/m', $block, $matches2, PREG_SET_ORDER);
+            foreach ($matches2 as $i => $match) {
+                $choices[] = $match[1] . '. ' . $match[2];
+                // Si la ligne est en gras ou entre crochets, on la considère comme bonne réponse
+                if (strpos($match[0], '**') !== false || strpos($match[0], '[') !== false) {
+                    $correct = $i;
+                }
             }
         }
 
-        // Type de question
-        if (count($choices) === 2 && in_array(strtolower($choices[0]), ['vrai', 'faux'])) {
-            $type = 'vrai-faux';
-        } elseif (count($choices) > 0) {
-            $type = 'qcm';
-        } else {
-            $type = 'ouvert';
-        }
+        $type = (count($choices) > 0) ? 'qcm' : 'ouvert';
 
         $questions[] = [
-            'title' => $title,
             'question' => $question,
             'choices' => $choices,
             'correct' => $correct,

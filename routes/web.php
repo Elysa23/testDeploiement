@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Controllers\CourseController;
-
+use App\Http\Controllers\CoursePageController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -118,6 +118,8 @@ Route::get('apprenant/cours/{course}/{page?}', [App\Http\Controllers\CoursePageC
 // 05/05 Cours publiés
 Route::get('apprenant/cours', [App\Http\Controllers\CourseController::class, 'published'])->name('courses.published');
 
+use App\Http\Controllers\QuizController;
+
 // 06/05 Liste des quiz, création, affichage, édition, suppression
 Route::resource('quizzes', App\Http\Controllers\QuizController::class);
 
@@ -133,3 +135,7 @@ Route::get('quizzes/{quiz}/answer', [QuizController::class, 'answer'])->name('qu
 
 // Soumission des réponses
 Route::post('quizzes/{quiz}/submit', [QuizController::class, 'submitAnswers'])->name('quizzes.submit');
+
+// 09/05 Affichage quizz côté admin et formateur
+Route::get('quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
+
