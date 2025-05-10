@@ -82,18 +82,13 @@ class QuizController extends Controller
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => "> Génère un quiz QCM sur ce contenu, en respectant STRICTEMENT ce format Markdown pour chaque question :
-
-                    > Question
-                    > - [ ] Proposition 1
-                    > - [ ] Proposition 2
-                    > - [x] Bonne réponse
-                    > ---
-                    >
-                    > - Utilise toujours - [ ] pour chaque proposition, et - [x] pour la bonne réponse.
-                    > - N’utilise jamais d’autres formats (pas de parenthèses, pas de lettres, pas de gras, pas de crochets autour du texte, pas de listes simples).
-                    > - Ne mets pas la bonne réponse en gras ou entre crochets, indique-la uniquement par [x].
-                    > - Ajoute trois tirets --- entre chaque question. 
+                    'content' => "Génère un quiz varié (QCM, vrai/faux, ouvert) de difficulté raisonnable sur ce contenu, en utilisant la syntaxe Markdown. 
+                - Utilise des titres (#) pour chaque question.
+                - Mets les questions en gras (**).
+                - Utilise des listes à puces pour les propositions de réponses.
+                - Indique la bonne réponse en la mettant en gras ou avec [x] pour les QCM.
+                - Ajoute une ligne de séparation (---) entre chaque question.
+                -Utilise toujours la syntaxe - [ ] pour chaque proposition, et - [x] pour la bonne réponse.  
 
                 Contenu du cours : " . $course->content,    
                 ],
